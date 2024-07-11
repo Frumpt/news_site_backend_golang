@@ -8,7 +8,7 @@ import (
 )
 
 func UpdateNew(body []byte) error {
-	var new models.News
+	var newt models.News
 
 	var JsonData struct {
 		ID          *int   `json:"ID"`
@@ -26,7 +26,7 @@ func UpdateNew(body []byte) error {
 		return fmt.Errorf("name or password or id or user_role_id is empty")
 	}
 
-	res := db.DataBase.Model(&new).Where("id = ?", JsonData.ID).Updates(&models.News{Title: JsonData.Title, Description: JsonData.Description, NameImage: JsonData.NameImage})
+	res := db.DataBase.Model(&newt).Where("id = ?", JsonData.ID).Updates(&models.News{Title: JsonData.Title, Description: JsonData.Description, NameImage: JsonData.NameImage})
 
 	return res.Error
 

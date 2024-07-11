@@ -6,9 +6,9 @@ import (
 )
 
 func DeleteNew(id int) (int64, error) {
-	var new models.News
+	var newt models.News
 
-	res := db.DataBase.Where("id = ?", id).Delete(&new)
+	res := db.DataBase.Where("id = ?", id).Delete(&newt)
 
 	return res.RowsAffected, res.Error
 }

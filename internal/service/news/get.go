@@ -22,7 +22,7 @@ func GetDataNews() ([]byte, error) {
 func GetDataNew(id int) (int64, []byte, error, error) {
 	var newt models.News
 
-	res := db.DataBase.Select("Id", "Name").Find(&new, "id = ?", id)
+	res := db.DataBase.Select("Id", "Name").Find(&newt, "id = ?", id)
 
 	data, err := json.Marshal(newt)
 
