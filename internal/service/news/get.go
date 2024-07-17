@@ -3,6 +3,7 @@ package news
 import (
 	"NewsBack/internal/db"
 	"NewsBack/internal/models"
+	"NewsBack/internal/service/tags"
 	"encoding/json"
 )
 
@@ -22,9 +23,20 @@ func GetDataNews() ([]byte, error) {
 func GetDataNew(id int) (int64, []byte, error, error) {
 	var newt models.News
 
-	res := db.DataBase.Select("Id", "Name").Find(&newt, "id = ?", id)
+	res := db.DataBase.Select("ID", "UserID", "Title", "Description", "NameImage").Find(&newt, "id = ?", id)
 
-	data, err := json.Marshal(newt)
+	dataTags, errTags := tags.GetDataTagsByNewsId(id)
+
+	if errTags != nil {
+		return 0, nil, errTags, res.Error
+	}
+
+	dataWithTags := struct {
+		DataTags []string
+		Data     models.News
+	}{dataTags, newt}
+
+	data, err := json.Marshal(dataWithTags)
 
 	return res.RowsAffected, data, err, res.Error
 }

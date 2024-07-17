@@ -9,7 +9,7 @@ import (
 func GetDataComments() ([]byte, error) {
 	var comments []models.Comments
 
-	db.DataBase.Select("ID", "UserID", "Title", "Description", "NameImage").Find(&comments)
+	db.DataBase.Select("ID", "UserID", "Name", "Description", "NewsID").Find(&comments)
 
 	data, err := json.Marshal(comments)
 	if err != nil {
@@ -22,7 +22,7 @@ func GetDataComments() ([]byte, error) {
 func GetDataComment(id int) (int64, []byte, error, error) {
 	var comment models.Comments
 
-	res := db.DataBase.Select("Id", "Name").Find(&comment, "id = ?", id)
+	res := db.DataBase.Select("ID", "UserID", "Name", "Description", "NewsID").Find(&comment, "id = ?", id)
 
 	data, err := json.Marshal(comment)
 
