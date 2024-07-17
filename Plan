@@ -1,0 +1,32 @@
+1) Основная часть
+
+2) Разделение на сущности
+
+    Модели
+
+        Пользователь / user - id, username, password | role.id - many - one
+
+
+
+        Роли / role - id, name
+
+
+
+        Новости / news - id, name, description | user.id - many to one
+
+
+
+        Комментарии / comments - id, username, description | user.id - many to one, news.id - many to one
+
+
+    Сущности -
+
+3) Какие папки я создам -
+
+    API    -  для всех endpoint
+        \
+         Users
+         News
+         Comments
+         Roles
+
