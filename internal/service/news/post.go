@@ -9,7 +9,7 @@ import (
 )
 
 func CreateNew(body []byte) error {
-	var JsonData struct {
+	type JsonDataType struct {
 		ID          *int      `json:"ID"`
 		UserID      *int      `json:"UserID"`
 		Title       string    `json:"Title"`
@@ -19,9 +19,13 @@ func CreateNew(body []byte) error {
 		NameTag     *[]string `json:"NameTag"`
 	}
 
-	if err := json.Unmarshal(body, &JsonData); err != nil {
+	var JsonGet JsonDataType
+
+	if err := json.Unmarshal(body, &JsonGet); err != nil {
 		return err
 	}
+
+	var JsonData JsonDataType = JsonGet
 
 	if JsonData.UserID == nil || JsonData.ID == nil || JsonData.Title == "" || JsonData.Description == "" || JsonData.NameImage == "" {
 		return fmt.Errorf("name or password or id or user_role_id is empty")

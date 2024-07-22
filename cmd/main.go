@@ -6,6 +6,7 @@ import (
 	"NewsBack/internal/api/roles"
 	"NewsBack/internal/api/users"
 	"NewsBack/internal/db"
+	serviceUser "NewsBack/internal/service/users"
 	"github.com/gofiber/fiber/v3"
 	"log"
 )
@@ -20,6 +21,8 @@ func main() {
 	db.Connect(configDB)
 
 	users.UserRoute("/api", App)
+
+	App.Use(serviceUser.UserIndifity)
 	roles.RoleRoute("/api", App)
 	news.NewRoute("/api", App)
 	comments.CommentRoute("/api", App)

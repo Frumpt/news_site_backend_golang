@@ -2,6 +2,7 @@ package users
 
 import (
 	"NewsBack/internal/service/users"
+
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -18,9 +19,8 @@ func PostUser(url string, addUrl string, App *fiber.App) {
 				return c.SendStatus(400)
 			case "name or password or id or user_role_id is empty":
 				return c.SendStatus(400)
-
 			case "role not found":
-				return c.SendStatus(400)
+				return c.SendStatus(404)
 			}
 		}
 		return c.SendStatus(201)

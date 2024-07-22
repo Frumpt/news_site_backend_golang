@@ -8,5 +8,4 @@ func CommentRoute(url string, App *fiber.App) {
 	PostComment(url, "/comment", App)
 	PatchComment(url, "/comment", App)
 	DeleteComment(url, "/comment/:id", App)
-
 }

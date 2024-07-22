@@ -20,7 +20,7 @@ func GetDataNews() ([]byte, error) {
 	return data, err
 }
 
-func GetDataNew(id int) (int64, []byte, error, error) {
+func GetDataNew(id int) (int64, []byte, error) {
 	var newt models.News
 
 	res := db.DataBase.Select("ID", "UserID", "Title", "Description", "NameImage").Find(&newt, "id = ?", id)
@@ -28,7 +28,7 @@ func GetDataNew(id int) (int64, []byte, error, error) {
 	dataTags, errTags := tags.GetDataTagsByNewsId(id)
 
 	if errTags != nil {
-		return 0, nil, errTags, res.Error
+		return 0, nil, errTags
 	}
 
 	dataWithTags := struct {
@@ -36,7 +36,11 @@ func GetDataNew(id int) (int64, []byte, error, error) {
 		Data     models.News
 	}{dataTags, newt}
 
-	data, err := json.Marshal(dataWithTags)
+	data, errJson := json.Marshal(dataWithTags)
 
-	return res.RowsAffected, data, err, res.Error
+	if errJson != nil {
+		return 0, []byte{}, errJson
+	}
+
+	return res.RowsAffected, data, res.Error
 }

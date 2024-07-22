@@ -8,5 +8,6 @@ func UserRoute(url string, App *fiber.App) {
 	PostUser(url, "/user", App)
 	PatchUser(url, "/user", App)
 	DeleteUser(url, "/user/:id", App)
+	SingUp(url, "/singup", App)
 
 }

@@ -2,8 +2,9 @@ package news
 
 import (
 	"NewsBack/internal/service/news"
-	"github.com/gofiber/fiber/v3"
 	"strconv"
+
+	"github.com/gofiber/fiber/v3"
 )
 
 func GetNews(url string, addUrl string, App *fiber.App) {
@@ -27,13 +28,13 @@ func GetNew(url string, addUrl string, App *fiber.App) {
 			return c.SendStatus(404)
 		}
 
-		rows, data, err, errRes := news.GetDataNew(id)
+		rows, data, err := news.GetDataNew(id)
 
 		if rows == 0 {
 			return c.SendStatus(404)
 		}
 
-		if err != nil && errRes != nil {
+		if err != nil {
 			return c.SendStatus(500)
 		}
 

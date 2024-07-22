@@ -8,5 +8,6 @@ func NewRoute(url string, App *fiber.App) {
 	PostNew(url, "/new", App)
 	PatchNew(url, "/new", App)
 	DeleteNew(url, "/new/:id", App)
+	PostPhoto(url, "/new/imgupload/:id", App)
 
 }

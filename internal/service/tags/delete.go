@@ -3,7 +3,7 @@ package tags
 import (
 	"NewsBack/internal/db"
 	"NewsBack/internal/models"
-	"fmt"
+
 	"gorm.io/gorm/clause"
 )
 
@@ -19,11 +19,11 @@ func DeleteTag(NewId int) (int64, error) {
 		return 0, res.Error
 	}
 
-	fmt.Println(len(newsTag))
+	var saveNewsTag []models.NewsTags = newsTag
 
-	for i := 0; i < len(newsTag); i++ {
+	for i := 0; i < len(saveNewsTag); i++ {
 
-		tagId := newsTag[i].IDTag
+		tagId := saveNewsTag[i].IDTag
 
 		res = db.DataBase.Find(&newsTag, "id_tag = ?", tagId)
 
