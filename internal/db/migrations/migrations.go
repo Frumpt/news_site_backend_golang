@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-var configDB string = "host=localhost user=postgres password=passwordtest dbname=Todos port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+var configDB string = "host=localhost Router=postgres password=passwordtest dbname=Todos port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 
 var input string
 

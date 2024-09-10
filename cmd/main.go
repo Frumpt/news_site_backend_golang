@@ -1,12 +1,11 @@
 package main
 
 import (
-	"NewsBack/internal/api/comments"
-	"NewsBack/internal/api/news"
-	"NewsBack/internal/api/roles"
-	"NewsBack/internal/api/users"
-	"NewsBack/internal/db"
-	serviceUser "NewsBack/internal/service/users"
+	"NewsBack/internal/api"
+	"NewsBack/internal/api/Router"
+	db2 "NewsBack/internal/db"
+	"NewsBack/internal/repository"
+	"NewsBack/internal/usecase"
 	"github.com/gofiber/fiber/v3"
 	"log"
 )
@@ -16,16 +15,28 @@ var App *fiber.App
 var configDB string = "host=localhost user=postgres password=passwordtest dbname=Todos port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 
 func main() {
-	App = fiber.New()
 
-	db.Connect(configDB)
+	db, err := db2.Connect(configDB)
+	if err != nil {
+		panic(err)
+	}
 
-	users.UserRoute("/api", App)
+	userRepository := repository.NewUserRepository(db)
+	userUseCase := usecase.NewUserUseCase(userRepository)
+	userHandler := Router.NewUserRouter(userUseCase)
 
-	App.Use(serviceUser.UserIndifity)
-	roles.RoleRoute("/api", App)
-	news.NewRoute("/api", App)
-	comments.CommentRoute("/api", App)
+	newsRepository := repository.NewNewsRepository(db)
+	newsUseCase := usecase.NewNewsUseCase(newsRepository)
+	newsHandler := Router.NewNewsRouter(newsUseCase)
 
-	log.Fatal(App.Listen(":3000"))
+	commentRepository := repository.NewCommentRepository(db)
+	commentUseCase := usecase.NewCommentUseCase(commentRepository)
+	commentHandler := Router.NewCommentRouter(commentUseCase)
+
+	tagRepository := repository.NewTagRepository(db)
+	tagUseCase := usecase.NewTagUseCase(tagRepository)
+	tagHandler := Router.NewTagRouter(tagUseCase)
+	serverHTTP := api.NewServerHTTP(userHandler, newsHandler, commentHandler, tagHandler)
+	log.Fatal(serverHTTP.Listen(":3000"))
+
 }

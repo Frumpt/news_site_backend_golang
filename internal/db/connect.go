@@ -5,14 +5,12 @@ import (
 	"gorm.io/gorm"
 )
 
-var DataBase *gorm.DB
-
-func Connect(config string) {
+func Connect(config string) (*gorm.DB, error) {
 
 	db, err := gorm.Open(postgres.Open(config), &gorm.Config{})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	DataBase = db
+	return db, nil
 }
