@@ -20,11 +20,12 @@ var _ = Describe("UserPass", func() {
 
 	var password string = "123"
 	TestDataOneObject := domain.User{Name: "Nik", Password: &password, ID: 1, UserRoleID: 1}
+	TestDataFindOne := domain.User{Name: "Nik", Password: nil, ID: 1, UserRoleID: 1}
 	TestDataDelete := domain.User{Name: "", Password: nil, ID: 0, UserRoleID: 0}
 	TestDataFindAll := []domain.User{domain.User{Name: "Nik", Password: nil, ID: 1, UserRoleID: 1}}
 
 	BeforeEach(func() {
-		bd, _ := db.Connect(configDB)
+		bd, _ := db.ConnectPGX(configDB)
 		Repository = repository.NewUserRepository(bd)
 	})
 
@@ -36,7 +37,7 @@ var _ = Describe("UserPass", func() {
 			Expect(Repository.FindAll()).To(Equal(TestDataFindAll))
 		})
 		It("find one should return the one object", func() {
-			Expect(Repository.FindOne(1)).To(Equal(TestDataOneObject))
+			Expect(Repository.FindOne(1)).To(Equal(TestDataFindOne))
 		})
 
 		It("delete should return the nil object", func() {
@@ -58,7 +59,7 @@ var _ = Describe("UserPass", func() {
 			Expect(UseCase.FindAll()).To(Equal(TestDataFindAll))
 		})
 		It("find one should return the one object", func() {
-			Expect(UseCase.FindOne(1)).To(Equal(TestDataOneObject))
+			Expect(UseCase.FindOne(1)).To(Equal(TestDataFindOne))
 		})
 
 		It("delete should return the nil object", func() {
@@ -131,7 +132,7 @@ var _ = Describe("UserFail", func() {
 	TestFailDataOneObject := struct{ id int }{id: 0}
 
 	BeforeEach(func() {
-		bd, _ := db.Connect(configDB)
+		bd, _ := db.ConnectPGX(configDB)
 		Repository = repository.NewUserRepository(bd)
 	})
 
@@ -198,7 +199,7 @@ var _ = Describe("UserFail", func() {
 			Expect(resp.StatusCode).To(Equal(testReqFail.expectedCode))
 		})
 
-		It("delete should return 404 statusCode", func() {
+		It("delete nil object in db should return 404 statusCode", func() {
 			resp, _ := app.Test(reqDelete)
 			Expect(resp.StatusCode).To(Equal(testReqFail.expectedCode))
 		})

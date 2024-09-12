@@ -21,7 +21,12 @@ func main() {
 		panic(err)
 	}
 
-	userRepository := repository.NewUserRepository(db)
+	dbPGX, err := db2.ConnectPGX(configDB)
+	if err != nil {
+		panic(err)
+	}
+
+	userRepository := repository.NewUserRepository(dbPGX)
 	userUseCase := usecase.NewUserUseCase(userRepository)
 	userHandler := Router.NewUserRouter(userUseCase)
 

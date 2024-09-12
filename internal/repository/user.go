@@ -1,18 +1,15 @@
 package repository
 
 import (
+	"NewsBack/internal/db"
 	"NewsBack/internal/domain"
+	"NewsBack/sqlc/database"
+	"context"
 	"fmt"
-	"gorm.io/gorm"
 )
 
-//go:generate go run github.com/vektra/mockery/v2@v2.45.0 --name=DB
-type DB interface {
-	NewDB() *gorm.DB
-}
-
 type userDateBase struct {
-	DB *gorm.DB
+	DB *db.DB
 }
 
 type UserRepository interface {
@@ -22,37 +19,41 @@ type UserRepository interface {
 	DeleteById(int) (domain.User, error)
 }
 
-func NewUserRepository(DB *gorm.DB) UserRepository {
+func NewUserRepository(DB *db.DB) UserRepository {
 	return &userDateBase{DB: DB}
 }
 
 func (udb *userDateBase) FindAll() ([]domain.User, error) {
 	var users []domain.User
-	err := udb.DB.Select("Id", "Name", "user_role_id").Find(&users).Error
+	ctx := context.Background()
+	users, err := udb.DB.UseCase.GetUsers(ctx)
 
 	return users, err
 }
 
 func (udb *userDateBase) FindOne(id int) (domain.User, error) {
-	var user domain.User
-	err := udb.DB.First(&user, id).Error
+	var users domain.User
+	ctx := context.Background()
+	users, err := udb.DB.UseCase.GetUser(ctx, id)
 
-	return user, err
+	return users, err
 }
 
 func (udb *userDateBase) Save(user domain.User) (domain.User, error) {
-	err := udb.DB.Create(&user).Error
+	var users domain.User
+	ctx := context.Background()
+	users, err := udb.DB.UseCase.CreateUser(ctx, database.CreateUserParams{ID: user.ID, Name: user.Name, Password: *user.Password, UserRoleID: user.UserRoleID})
 
-	return user, err
+	return users, err
 }
 
 func (udb *userDateBase) DeleteById(id int) (domain.User, error) {
-	var user domain.User
-	var err error
-	rows := udb.DB.Where("id = ?", id).Delete(&user).RowsAffected
+	var users domain.User
+	ctx := context.Background()
+	rows, err := udb.DB.UseCase.DeleteUser(ctx, id)
+	fmt.Printf("%v, %v, %v", rows, err, "deleted")
 	if rows == 0 {
-		err = fmt.Errorf("not found")
+		return users, fmt.Errorf("record not found")
 	}
-	return user, err
-
+	return users, err
 }
