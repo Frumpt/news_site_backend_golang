@@ -10,6 +10,99 @@ import (
 	"context"
 )
 
+const createComment = `-- name: CreateComment :one
+INSERT INTO comments (
+    id, user_id, news_id, name, description
+) VALUES (
+             $1, $2, $3, $4, $5
+         )
+    RETURNING id, user_id, news_id, name, description
+`
+
+type CreateCommentParams struct {
+	ID          int
+	UserID      int
+	NewsID      int
+	Name        string
+	Description string
+}
+
+func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (domain.Comment, error) {
+	row := q.db.QueryRow(ctx, createComment,
+		arg.ID,
+		arg.UserID,
+		arg.NewsID,
+		arg.Name,
+		arg.Description,
+	)
+	var i domain.Comment
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.NewsID,
+		&i.Name,
+		&i.Description,
+	)
+	return i, err
+}
+
+const createNew = `-- name: CreateNew :one
+INSERT INTO news (
+    id, user_id, title, description, name_image
+) VALUES (
+             $1, $2, $3, $4, $5
+         )
+    RETURNING id, user_id, title, description, name_image
+`
+
+type CreateNewParams struct {
+	ID          int
+	UserID      int
+	Title       string
+	Description string
+	NameImage   string
+}
+
+func (q *Queries) CreateNew(ctx context.Context, arg CreateNewParams) (domain.News, error) {
+	row := q.db.QueryRow(ctx, createNew,
+		arg.ID,
+		arg.UserID,
+		arg.Title,
+		arg.Description,
+		arg.NameImage,
+	)
+	var i domain.News
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Title,
+		&i.Description,
+		&i.NameImage,
+	)
+	return i, err
+}
+
+const createTag = `-- name: CreateTag :one
+INSERT INTO tags (
+    id, name
+) VALUES (
+             $1, $2
+         )
+    RETURNING id, name
+`
+
+type CreateTagParams struct {
+	ID   int
+	Name string
+}
+
+func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) (domain.Tag, error) {
+	row := q.db.QueryRow(ctx, createTag, arg.ID, arg.Name)
+	var i domain.Tag
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     id, name, password, user_role_id
@@ -43,27 +136,212 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (domain.
 	return i, err
 }
 
-const deleteUser = `-- name: DeleteUser :exec
-
+const deleteComment = `-- name: DeleteComment :exec
 WITH rows AS (
-DELETE FROM users
+DELETE FROM comments
 WHERE id = $1
-RETURNING *
+    RETURNING id, user_id, news_id, name, description
 )
-SELECT count(*) FROM rows;
+SELECT count(*) FROM rows
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id int) (int64, error) {
-	row := q.db.QueryRow(ctx, deleteUser, id)
-	var rows int64
+func (q *Queries) DeleteComment(ctx context.Context, id int) (int, error) {
+	row := q.db.QueryRow(ctx, deleteComment, id)
+	var rows int
 	err := row.Scan(&rows)
 	return rows, err
+}
+
+const deleteNews = `-- name: DeleteNews :exec
+WITH rows AS (
+DELETE FROM news
+WHERE news.id = $1
+    RETURNING id, user_id, title, description, name_image
+)
+SELECT count(*) FROM rows
+`
+
+func (q *Queries) DeleteNews(ctx context.Context, id int) (int, error) {
+	row := q.db.QueryRow(ctx, deleteNews, id)
+	var rows int
+	err := row.Scan(&rows)
+	return rows, err
+}
+
+const deleteTags = `-- name: DeleteTags :exec
+WITH rows AS (
+DELETE FROM tags
+WHERE id = $1
+    RETURNING id, name
+)
+SELECT count(*) FROM rows
+`
+
+func (q *Queries) DeleteTags(ctx context.Context, id int) (int, error) {
+	row := q.db.QueryRow(ctx, deleteTags, id)
+	var rows int
+	err := row.Scan(&rows)
+	return rows, err
+}
+
+const deleteUser = `-- name: DeleteUser :exec
+WITH rows AS (
+DELETE FROM users
+WHERE users.id = $1
+    RETURNING id, user_role_id, name, password
+)
+SELECT count(*) FROM rows
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id int) (int, error) {
+	row := q.db.QueryRow(ctx, deleteUser, id)
+	var rows int
+	err := row.Scan(&rows)
+	return rows, err
+}
+
+const getComment = `-- name: GetComment :one
+SELECT id, user_id, news_id, name, description FROM comments
+WHERE id = $1
+    LIMIT 1
+`
+
+func (q *Queries) GetComment(ctx context.Context, id int) (domain.Comment, error) {
+	row := q.db.QueryRow(ctx, getComment, id)
+	var i domain.Comment
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.NewsID,
+		&i.Name,
+		&i.Description,
+	)
+	return i, err
+}
+
+const getComments = `-- name: GetComments :many
+SELECT id, user_id, news_id, name, description FROM comments
+ORDER BY name
+`
+
+func (q *Queries) GetComments(ctx context.Context) ([]domain.Comment, error) {
+	rows, err := q.db.Query(ctx, getComments)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []domain.Comment
+	for rows.Next() {
+		var i domain.Comment
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.NewsID,
+			&i.Name,
+			&i.Description,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNew = `-- name: GetNew :one
+SELECT id, user_id, title, description, name_image FROM news
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetNew(ctx context.Context, id int) (domain.News, error) {
+	row := q.db.QueryRow(ctx, getNew, id)
+	var i domain.News
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Title,
+		&i.Description,
+		&i.NameImage,
+	)
+	return i, err
+}
+
+const getNews = `-- name: GetNews :many
+SELECT id, user_id, title, description, name_image FROM news
+ORDER BY title
+`
+
+func (q *Queries) GetNews(ctx context.Context) ([]domain.News, error) {
+	rows, err := q.db.Query(ctx, getNews)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []domain.News
+	for rows.Next() {
+		var i domain.News
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Title,
+			&i.Description,
+			&i.NameImage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTag = `-- name: GetTag :one
+SELECT id, name FROM tags
+WHERE id = $1
+    LIMIT 1
+`
+
+func (q *Queries) GetTag(ctx context.Context, id int) (domain.Tag, error) {
+	row := q.db.QueryRow(ctx, getTag, id)
+	var i domain.Tag
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
+const getTags = `-- name: GetTags :many
+SELECT id, name FROM tags
+ORDER BY name
+`
+
+func (q *Queries) GetTags(ctx context.Context) ([]domain.Tag, error) {
+	rows, err := q.db.Query(ctx, getTags)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []domain.Tag
+	for rows.Next() {
+		var i domain.Tag
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUser = `-- name: GetUser :one
 SELECT id, user_role_id, name, password FROM users
 WHERE id = $1
-LIMIT 1
+    LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id int) (domain.User, error) {

@@ -23,7 +23,7 @@ var _ = Describe("NewsPass", func() {
 	TestDataFindAll := []domain.News{domain.News{Title: "Nik", Description: "password", ID: 1, UserID: 1, NameImage: "image/src:image.png"}}
 
 	BeforeEach(func() {
-		bd, _ := db.Connect(configDB)
+		bd, _ := db.ConnectPGX(configDB)
 		Repository = repository.NewNewsRepository(bd)
 	})
 
@@ -129,7 +129,7 @@ var _ = Describe("NewsFail", func() {
 	TestFailDataOneObject := struct{ id int }{id: 0}
 
 	BeforeEach(func() {
-		bd, _ := db.Connect(configDB)
+		bd, _ := db.ConnectPGX(configDB)
 		Repository = repository.NewNewsRepository(bd)
 	})
 

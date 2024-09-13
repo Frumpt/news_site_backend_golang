@@ -23,7 +23,7 @@ var _ = Describe("CommentPass", func() {
 	TestDataFindAll := []domain.Comment{domain.Comment{Name: "Nik", ID: 1, UserID: 1, Description: "123", NewsID: 1}}
 
 	BeforeEach(func() {
-		bd, _ := db.Connect(configDB)
+		bd, _ := db.ConnectPGX(configDB)
 		Repository = repository.NewCommentRepository(bd)
 	})
 
@@ -129,7 +129,7 @@ var _ = Describe("CommentFail", func() {
 	TestFailDataOneObject := struct{ id int }{id: 0}
 
 	BeforeEach(func() {
-		bd, _ := db.Connect(configDB)
+		bd, _ := db.ConnectPGX(configDB)
 		Repository = repository.NewCommentRepository(bd)
 	})
 

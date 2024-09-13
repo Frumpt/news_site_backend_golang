@@ -1,13 +1,15 @@
 package repository
 
 import (
+	"NewsBack/internal/db"
 	"NewsBack/internal/domain"
+	"NewsBack/sqlc/database"
+	"context"
 	"fmt"
-	"gorm.io/gorm"
 )
 
 type TagDateBase struct {
-	DB *gorm.DB
+	DB *db.DB
 }
 
 type TagRepository interface {
@@ -17,37 +19,40 @@ type TagRepository interface {
 	DeleteById(int) (domain.Tag, error)
 }
 
-func NewTagRepository(DB *gorm.DB) TagRepository {
+func NewTagRepository(DB *db.DB) TagRepository {
 	return &TagDateBase{DB: DB}
 }
 
 func (udb *TagDateBase) FindAll() ([]domain.Tag, error) {
 	var Tags []domain.Tag
-	err := udb.DB.Select("Id", "Name").Find(&Tags).Error
+	ctx := context.Background()
+	Tags, err := udb.DB.UseCase.GetTags(ctx)
 
 	return Tags, err
 }
 
 func (udb *TagDateBase) FindOne(id int) (domain.Tag, error) {
-	var Tag domain.Tag
-	err := udb.DB.First(&Tag, id).Error
+	var Tags domain.Tag
+	ctx := context.Background()
+	Tags, err := udb.DB.UseCase.GetTag(ctx, id)
 
-	return Tag, err
+	return Tags, err
 }
 
 func (udb *TagDateBase) Save(Tag domain.Tag) (domain.Tag, error) {
-	err := udb.DB.Create(&Tag).Error
+	var Tags domain.Tag
+	ctx := context.Background()
+	Tags, err := udb.DB.UseCase.CreateTag(ctx, database.CreateTagParams{ID: Tag.ID, Name: Tag.Name})
 
-	return Tag, err
+	return Tags, err
 }
 
 func (udb *TagDateBase) DeleteById(id int) (domain.Tag, error) {
-	var Tag domain.Tag
-	var err error
-	rows := udb.DB.Where("id = ?", id).Delete(&Tag).RowsAffected
+	var Tags domain.Tag
+	ctx := context.Background()
+	rows, err := udb.DB.UseCase.DeleteTags(ctx, id)
 	if rows == 0 {
-		err = fmt.Errorf("not found")
+		return Tags, fmt.Errorf("record not found")
 	}
-	return Tag, err
-
+	return Tags, err
 }

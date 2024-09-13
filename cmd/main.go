@@ -6,20 +6,12 @@ import (
 	db2 "NewsBack/internal/db"
 	"NewsBack/internal/repository"
 	"NewsBack/internal/usecase"
-	"github.com/gofiber/fiber/v3"
 	"log"
 )
-
-var App *fiber.App
 
 var configDB string = "host=localhost user=postgres password=passwordtest dbname=Todos port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 
 func main() {
-
-	db, err := db2.Connect(configDB)
-	if err != nil {
-		panic(err)
-	}
 
 	dbPGX, err := db2.ConnectPGX(configDB)
 	if err != nil {
@@ -30,15 +22,15 @@ func main() {
 	userUseCase := usecase.NewUserUseCase(userRepository)
 	userHandler := Router.NewUserRouter(userUseCase)
 
-	newsRepository := repository.NewNewsRepository(db)
+	newsRepository := repository.NewNewsRepository(dbPGX)
 	newsUseCase := usecase.NewNewsUseCase(newsRepository)
 	newsHandler := Router.NewNewsRouter(newsUseCase)
 
-	commentRepository := repository.NewCommentRepository(db)
+	commentRepository := repository.NewCommentRepository(dbPGX)
 	commentUseCase := usecase.NewCommentUseCase(commentRepository)
 	commentHandler := Router.NewCommentRouter(commentUseCase)
 
-	tagRepository := repository.NewTagRepository(db)
+	tagRepository := repository.NewTagRepository(dbPGX)
 	tagUseCase := usecase.NewTagUseCase(tagRepository)
 	tagHandler := Router.NewTagRouter(tagUseCase)
 	serverHTTP := api.NewServerHTTP(userHandler, newsHandler, commentHandler, tagHandler)

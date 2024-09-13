@@ -1,13 +1,15 @@
 package repository
 
 import (
+	"NewsBack/internal/db"
 	"NewsBack/internal/domain"
+	"NewsBack/sqlc/database"
+	"context"
 	"fmt"
-	"gorm.io/gorm"
 )
 
 type CommentDateBase struct {
-	DB *gorm.DB
+	DB *db.DB
 }
 
 type CommentRepository interface {
@@ -17,37 +19,40 @@ type CommentRepository interface {
 	DeleteById(int) (domain.Comment, error)
 }
 
-func NewCommentRepository(DB *gorm.DB) CommentRepository {
+func NewCommentRepository(DB *db.DB) CommentRepository {
 	return &CommentDateBase{DB: DB}
 }
 
 func (udb *CommentDateBase) FindAll() ([]domain.Comment, error) {
 	var Comments []domain.Comment
-	err := udb.DB.Select("ID", "UserID", "Name", "Description", "NewsID").Find(&Comments).Error
+	ctx := context.Background()
+	Comments, err := udb.DB.UseCase.GetComments(ctx)
 
 	return Comments, err
 }
 
 func (udb *CommentDateBase) FindOne(id int) (domain.Comment, error) {
-	var Comment domain.Comment
-	err := udb.DB.First(&Comment, id).Error
+	var Comments domain.Comment
+	ctx := context.Background()
+	Comments, err := udb.DB.UseCase.GetComment(ctx, id)
 
-	return Comment, err
+	return Comments, err
 }
 
 func (udb *CommentDateBase) Save(Comment domain.Comment) (domain.Comment, error) {
-	err := udb.DB.Create(&Comment).Error
+	var Comments domain.Comment
+	ctx := context.Background()
+	Comments, err := udb.DB.UseCase.CreateComment(ctx, database.CreateCommentParams{ID: Comment.ID, Name: Comment.Name, NewsID: Comment.NewsID, UserID: Comment.UserID, Description: Comment.Description})
 
-	return Comment, err
+	return Comments, err
 }
 
 func (udb *CommentDateBase) DeleteById(id int) (domain.Comment, error) {
-	var Comment domain.Comment
-	var err error
-	rows := udb.DB.Where("id = ?", id).Delete(&Comment).RowsAffected
+	var Comments domain.Comment
+	ctx := context.Background()
+	rows, err := udb.DB.UseCase.DeleteComment(ctx, id)
 	if rows == 0 {
-		err = fmt.Errorf("not found")
+		return Comments, fmt.Errorf("record not found")
 	}
-	return Comment, err
-
+	return Comments, err
 }

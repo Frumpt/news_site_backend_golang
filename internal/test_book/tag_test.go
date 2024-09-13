@@ -23,7 +23,7 @@ var _ = Describe("TagPass", func() {
 	TestDataFindAll := []domain.Tag{domain.Tag{Name: "Nik", ID: 1}}
 
 	BeforeEach(func() {
-		bd, _ := db.Connect(configDB)
+		bd, _ := db.ConnectPGX(configDB)
 		Repository = repository.NewTagRepository(bd)
 	})
 
@@ -129,7 +129,7 @@ var _ = Describe("TagFail", func() {
 	TestFailDataOneObject := struct{ id int }{id: 0}
 
 	BeforeEach(func() {
-		bd, _ := db.Connect(configDB)
+		bd, _ := db.ConnectPGX(configDB)
 		Repository = repository.NewTagRepository(bd)
 	})
 

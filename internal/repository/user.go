@@ -51,7 +51,6 @@ func (udb *userDateBase) DeleteById(id int) (domain.User, error) {
 	var users domain.User
 	ctx := context.Background()
 	rows, err := udb.DB.UseCase.DeleteUser(ctx, id)
-	fmt.Printf("%v, %v, %v", rows, err, "deleted")
 	if rows == 0 {
 		return users, fmt.Errorf("record not found")
 	}
